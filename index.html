@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>Quizzy! — Sân cỏ vui nhộn</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Nunito:wght@500;600;700;800;900;1000&display=swap');
+
+    :root {
+      font-family: "DM Sans", sans-serif;
+      color: #24243a;
+      background: #f6f7fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      --purple: #7658eb;
+      --purple-dark: #6141da;
+      --ink: #24243a;
+      --muted: #89899d;
+      --line: #eeedf3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse at 9% 12%, rgba(255, 227, 181, .28), transparent 25%),
+        radial-gradient(ellipse at 93% 85%, rgba(202, 196, 255, .3), transparent 28%),
+        #f6f7fb;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 34px 22px;
+    }
+
+    .game { width: min(100%, 532px); }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 0 7px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink);
+      font-family: "Nunito", sans-serif;
+      font-size: 19px;
+      font-weight: 1000;
+      letter-spacing: -.7px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border-radius: 10px;
+      background: #ede8ff;
+      color: var(--purple);
+      font-size: 18px;
+      transform: rotate(-8deg);
+    }
+
+    .top-note {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      min-height: 495px;
+      padding: 44px 48px;
+      border: 1px solid rgba(236, 235, 244, .88);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .94);
+      box-shadow: 0 24px 70px rgba(48, 41, 98, .09), 0 3px 12px rgba(38, 34, 63, .035);
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; animation: appear .35s ease both; }
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(9px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-screen { text-align: center; }
+
+    .hero-illustration {
+      position: relative;
+      display: grid;
+      width: 128px;
+      height: 128px;
+      margin: 1px auto 26px;
+      place-items: center;
+      border: 1px solid #f0edff;
+      border-radius: 38px;
+      background: linear-gradient(145deg, #f8f5ff, #eeebff);
+      font-size: 63px;
+      transform: rotate(-4deg);
+    }
+
+    .hero-illustration .sparkle {
+      position: absolute;
+      top: 3px;
+      right: -14px;
+      color: #f2ad3e;
+      font-size: 30px;
+      transform: rotate(12deg);
+    }
+
+    .eyebrow {
+      color: var(--purple);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+    }
+
+    h1, h2, p { margin-top: 0; }
+
+    .hero-screen h1 {
+      margin: 10px 0 11px;
+      font-family: "Nunito", sans-serif;
+      font-size: clamp(35px, 8vw, 46px);
+      font-weight: 1000;
+      letter-spacing: -2px;
+      line-height: 1.08;
+    }
+
+    .hero-screen h1 span { color: var(--purple); }
+
+    .description {
+      max-width: 345px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .game-facts {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 22px 0 24px;
+    }
+
+    .fact {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 11px;
+      border: 1px solid #f0eff5;
+      border-radius: 999px;
+      background: #fcfcfe;
+      color: #66667c;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      display: flex;
+      width: 100%;
+      min-height: 54px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 15px;
+      background: var(--purple);
+      box-shadow: 0 8px 18px rgba(118, 88, 235, .22);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      transition: background .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    .primary-button:hover:not(:disabled) {
+      background: var(--purple-dark);
+      box-shadow: 0 11px 22px rgba(118, 88, 235, .3);
+      transform: translateY(-2px);
+    }
+
+    .primary-button:focus-visible, .answer:focus-visible {
+      outline: 3px solid #b9aaff;
+      outline-offset: 3px;
+    }
+
+    .play-screen { min-height: 405px; }
+
+    .progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .stage-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f0edff;
+      color: var(--purple);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .progress-track {
+      overflow: hidden;
+      height: 7px;
+      margin-bottom: 30px;
+      border-radius: 99px;
+      background: #f0eff5;
+    }
+
+    .progress-fill {
+      width: 10%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #8b70f2, #6c4ce6);
+      transition: width .4s ease;
+    }
+
+    .question-number {
+      margin: 0 0 10px;
+      color: var(--purple);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .question-title {
+      min-height: 67px;
+      margin: 0 0 23px;
+      font-family: "Nunito", sans-serif;
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: -.65px;
+      line-height: 1.35;
+    }
+
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+
+    .answer {
+      display: flex;
+      min-height: 53px;
+      align-items: center;
+      gap: 13px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      color: #424256;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+
+    .answer:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: #c9bcff;
+      background: #fbfaff;
+    }
+
+    .answer-letter {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      place-items: center;
+      border-radius: 9px;
+      background: #f5f4f8;
+      color: #87869a;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .answer-label { flex: 1; font-size: 13px; font-weight: 700; }
+
+    .answer.correct {
+      border-color: #8bd5ac;
+      background: #f2fbf5;
+      color: #27794c;
+    }
+
+    .answer.correct .answer-letter { background: #d9f3e3; color: #27794c; }
+    .answer.wrong { border-color: #f0a2a3; background: #fff5f4; color: #bd4d50; }
+    .answer.wrong .answer-letter { background: #ffe4e1; color: #bd4d50; }
+    .answer:disabled { cursor: default; }
+
+    .feedback {
+      min-height: 20px;
+      margin: 13px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .feedback.success { color: #2f955b; }
+    .feedback.error { color: #c35858; }
+    .next-button { min-height: 49px; margin-top: 12px; }
+
+    .result-screen { padding-top: 28px; text-align: center; }
+
+    .result-icon {
+      display: grid;
+      width: 98px;
+      height: 98px;
+      margin: 0 auto 22px;
+      place-items: center;
+      border: 1px solid #f1e7ca;
+      border-radius: 32px;
+      background: linear-gradient(145deg, #fff8e6, #fff1d2);
+      font-size: 48px;
+      transform: rotate(-5deg);
+    }
+
+    .result-screen h2 {
+      margin: 8px 0;
+      font-family: "Nunito", sans-serif;
+      font-size: 34px;
+      font-weight: 1000;
+      letter-spacing: -1px;
+    }
+
+    .result-description {
+      margin: 0 auto 23px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .score-panel {
+      margin-bottom: 22px;
+      padding: 19px;
+      border: 1px solid #f0ecff;
+      border-radius: 18px;
+      background: linear-gradient(130deg, #fbfaff, #f5f2ff);
+    }
+
+    .score-caption {
+      margin-bottom: 4px;
+      color: #818097;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .score {
+      color: var(--purple);
+      font-family: "Nunito", sans-serif;
+      font-size: 37px;
+      font-weight: 1000;
+      letter-spacing: -1.5px;
+    }
+
+    .result-detail { margin-top: 5px; color: #727186; font-size: 12px; font-weight: 700; }
+
+    .footer {
+      margin-top: 17px;
+      color: #a0a0b0;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    @media (max-width: 520px) {
+      .page { padding: 20px 14px; }
+      .topbar { margin-bottom: 13px; }
+      .card { min-height: 0; padding: 30px 22px; border-radius: 23px; }
+      .hero-illustration { width: 106px; height: 106px; margin-bottom: 21px; border-radius: 32px; font-size: 53px; }
+      .hero-screen h1 { font-size: 37px; }
+      .game-facts { gap: 7px; }
+      .fact { gap: 5px; padding: 7px 9px; font-size: 10px; }
+      .play-screen { min-height: 415px; }
+      .question-title { font-size: 22px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="game">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span> quizzy!</div>
+        <div class="top-note">Một chút tò mò, thật nhiều niềm vui ✨</div>
+      </header>
+
+      <section class="card" aria-live="polite">
+        <section class="screen hero-screen active" id="start-screen" aria-labelledby="game-title">
+          <div class="hero-illustration" aria-hidden="true">⚽<span class="sparkle">✦</span></div>
+          <div class="eyebrow">Sẵn sàng thử thách?</div>
+          <h1 id="game-title">Sân cỏ<br><span>vui nhộn</span></h1>
+          <p class="description">Cùng trả lời những câu hỏi bóng đá thật dễ nhé! Hoàn thành 10 câu và xem bạn ghi được bao nhiêu điểm nào.</p>
+          <div class="game-facts" aria-label="Thông tin trò chơi">
+            <span class="fact">🧠 10 câu hỏi</span>
+            <span class="fact">🗺️ 3 chặng</span>
+            <span class="fact">⭐ Chơi miễn phí</span>
+          </div>
+          <button class="primary-button" id="start-button" type="button">Bắt đầu chơi <span aria-hidden="true">→</span></button>
+        </section>
+
+        <section class="screen play-screen" id="play-screen" aria-labelledby="question-title">
+          <div class="progress-meta">
+            <span id="question-count">Câu 1 / 10</span>
+            <span class="stage-pill" id="stage-label">CHẶNG 1 · KHỞI ĐỘNG</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-label="Tiến độ trò chơi" aria-valuemin="0" aria-valuemax="10" aria-valuenow="1">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <p class="question-number" id="question-number">Câu hỏi số 01</p>
+          <h2 class="question-title" id="question-title"></h2>
+          <div class="answers" id="answers"></div>
+          <p class="feedback" id="feedback" aria-live="polite"></p>
+          <button class="primary-button next-button" id="next-button" type="button" hidden>Tiếp theo <span aria-hidden="true">→</span></button>
+        </section>
+
+        <section class="screen result-screen" id="result-screen" aria-labelledby="result-title">
+          <div class="result-icon" id="result-icon" aria-hidden="true">🏆</div>
+          <div class="eyebrow">Bạn đã hoàn thành thử thách</div>
+          <h2 id="result-title">Tuyệt vời!</h2>
+          <p class="result-description" id="result-description">Hành trình khám phá của bạn thật đáng nhớ.</p>
+          <div class="score-panel">
+            <div class="score-caption">TỔNG ĐIỂM CỦA BẠN</div>
+            <div class="score"><span id="score">0</span><span style="font-size:20px;color:#9792b2"> / 10</span></div>
+            <div class="result-detail" id="result-detail"></div>
+          </div>
+          <button class="primary-button" id="replay-button" type="button"><span aria-hidden="true">↻</span> Chơi lại</button>
+        </section>
+      </section>
+
+      <footer class="footer">Cứ vui là được — chúc bạn chơi thật vui! 💜</footer>
+    </div>
+  </main>
+
+  <script>
+    const questions = [
+      { question: "Trong bóng đá, cầu thủ dùng gì để đá bóng?", answers: ["Chân", "Tay", "Gậy", "Vợt"], correct: 0 },
+      { question: "Mỗi đội bóng có bao nhiêu cầu thủ trên sân khi bắt đầu trận đấu?", answers: ["5 cầu thủ", "7 cầu thủ", "11 cầu thủ", "15 cầu thủ"], correct: 2 },
+      { question: "Cầu thủ nào được dùng tay bắt bóng trong khu vực cấm địa của đội mình?", answers: ["Tiền đạo", "Thủ môn", "Hậu vệ", "Trọng tài"], correct: 1 },
+      { question: "Mục tiêu của một trận bóng đá là gì?", answers: ["Ném bóng vào rổ", "Đưa bóng qua lưới", "Đá bóng vào khung thành đối phương", "Chạy về đích"], correct: 2 },
+      { question: "Trọng tài thường thổi gì để bắt đầu hoặc dừng trận đấu?", answers: ["Cái còi", "Cái chuông", "Cái kèn", "Cái trống"], correct: 0 },
+      { question: "Một quả bóng đá thường có hình gì?", answers: ["Hình vuông", "Hình tròn", "Hình tam giác", "Hình chữ nhật"], correct: 1 },
+      { question: "Cầu thủ mặc gì để phân biệt hai đội?", answers: ["Đồng phục khác màu", "Áo mưa", "Đồ ngủ", "Áo khoác mùa đông"], correct: 0 },
+      { question: "Khi bóng bay hết đường biên ngang và chạm cầu thủ đội phòng ngự cuối cùng, đội tấn công thường được hưởng gì?", answers: ["Phạt góc", "Ném biên", "Phát bóng lên", "Đá luân lưu"], correct: 0 },
+      { question: "Cầu thủ nào thường chơi gần khung thành đối phương để ghi bàn?", answers: ["Thủ môn", "Tiền đạo", "Trọng tài", "Huấn luyện viên"], correct: 1 },
+      { question: "Nếu bóng đi vào khung thành hợp lệ, đội đó ghi được mấy bàn?", answers: ["0 bàn", "1 bàn", "2 bàn", "3 bàn"], correct: 1 }
+    ];
+
+    const stages = [
+      { end: 3, label: "CHẶNG 1 · KHỞI ĐỘNG" },
+      { end: 7, label: "CHẶNG 2 · KHÁM PHÁ" },
+      { end: 10, label: "CHẶNG 3 · VỀ ĐÍCH" }
+    ];
+    const letters = ["A", "B", "C", "D"];
+    const screens = {
+      start: document.getElementById("start-screen"),
+      play: document.getElementById("play-screen"),
+      result: document.getElementById("result-screen")
+    };
+    const answersElement = document.getElementById("answers");
+    const nextButton = document.getElementById("next-button");
+    const feedbackElement = document.getElementById("feedback");
+    let questionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function showScreen(name) {
+      Object.entries(screens).forEach(([screenName, element]) => {
+        element.classList.toggle("active", screenName === name);
+      });
+    }
+
+    function renderQuestion() {
+      const question = questions[questionIndex];
+      const questionNumber = questionIndex + 1;
+      const stage = stages.find((item) => questionNumber <= item.end);
+      document.getElementById("question-count").textContent = `Câu ${questionNumber} / ${questions.length}`;
+      document.getElementById("stage-label").textContent = stage.label;
+      document.getElementById("question-number").textContent = `Câu hỏi số ${String(questionNumber).padStart(2, "0")}`;
+      document.getElementById("question-title").textContent = question.question;
+      document.getElementById("progress-fill").style.width = `${(questionNumber / questions.length) * 100}%`;
+      document.querySelector(".progress-track").setAttribute("aria-valuenow", questionNumber);
+      feedbackElement.textContent = "";
+      feedbackElement.className = "feedback";
+      nextButton.hidden = true;
+      answered = false;
+      answersElement.replaceChildren();
+
+      question.answers.forEach((answer, answerIndex) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "answer";
+        button.innerHTML = `<span class="answer-letter">${letters[answerIndex]}</span><span class="answer-label"></span>`;
+        button.querySelector(".answer-label").textContent = answer;
+        button.addEventListener("click", () => selectAnswer(answerIndex));
+        answersElement.append(button);
+      });
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (answered) return;
+      answered = true;
+      const correctIndex = questions[questionIndex].correct;
+      const buttons = answersElement.querySelectorAll(".answer");
+      buttons.forEach((button, index) => {
+        button.disabled = true;
+        if (index === correctIndex) button.classList.add("correct");
+        if (index === selectedIndex && selectedIndex !== correctIndex) button.classList.add("wrong");
+      });
+      if (selectedIndex === correctIndex) {
+        score += 1;
+        feedbackElement.textContent = "Chính xác! Bạn giỏi quá 🎉";
+        feedbackElement.classList.add("success");
+      } else {
+        feedbackElement.textContent = `Chưa đúng rồi! Đáp án là ${letters[correctIndex]}. ${questions[questionIndex].answers[correctIndex]}.`;
+        feedbackElement.classList.add("error");
+      }
+      nextButton.innerHTML = questionIndex === questions.length - 1
+        ? "Xem kết quả <span aria-hidden=\"true\">→</span>"
+        : "Tiếp theo <span aria-hidden=\"true\">→</span>";
+      nextButton.hidden = false;
+      nextButton.focus();
+    }
+
+    function showResult() {
+      document.getElementById("score").textContent = score;
+      document.getElementById("result-detail").textContent = `Bạn trả lời đúng ${score} trên ${questions.length} câu hỏi.`;
+      let title = "Tuyệt vời!";
+      let message = "Trận đấu vui quá! Cùng thử sức thêm lần nữa nhé.";
+      let icon = "🏆";
+      if (score <= 3) {
+        title = "Khởi đầu thật vui!";
+        message = "Cứ luyện tập là bạn sẽ ngày càng giỏi hơn. Đá lại một trận nhé!";
+        icon = "🌱";
+      } else if (score <= 6) {
+        title = "Làm tốt lắm!";
+        message = "Bạn chơi tốt lắm! Thử thêm một trận để ghi được nhiều điểm hơn nhé.";
+        icon = "🌟";
+      } else if (score === questions.length) {
+        title = "Xuất sắc!";
+        message = "Bạn là ngôi sao sân cỏ! Trả lời đúng cả 10 câu, thật đáng nể!";
+        icon = "🏆";
+      }
+      document.getElementById("result-title").textContent = title;
+      document.getElementById("result-description").textContent = message;
+      document.getElementById("result-icon").textContent = icon;
+      showScreen("result");
+    }
+
+    function startGame() {
+      questionIndex = 0;
+      score = 0;
+      renderQuestion();
+      showScreen("play");
+    }
+
+    document.getElementById("start-button").addEventListener("click", startGame);
+    document.getElementById("replay-button").addEventListener("click", startGame);
+    nextButton.addEventListener("click", () => {
+      if (questionIndex === questions.length - 1) {
+        showResult();
+      } else {
+        questionIndex += 1;
+        renderQuestion();
+      }
+    });
+  </script>
+</body>
+</html>
