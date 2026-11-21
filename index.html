@@ -490,9 +490,34 @@
     const answersElement = document.getElementById("answers");
     const nextButton = document.getElementById("next-button");
     const feedbackElement = document.getElementById("feedback");
+    let shuffledQuestions = [];
     let questionIndex = 0;
     let score = 0;
     let answered = false;
+
+    function shuffle(items) {
+      const shuffled = [...items];
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+
+    function createShuffledQuestions() {
+      return shuffle(questions).map((question) => {
+        const answers = question.answers.map((answer, index) => ({
+          answer,
+          isCorrect: index === question.correct
+        }));
+        const shuffledAnswers = shuffle(answers);
+        return {
+          question: question.question,
+          answers: shuffledAnswers.map((item) => item.answer),
+          correct: shuffledAnswers.findIndex((item) => item.isCorrect)
+        };
+      });
+    }
 
     function showScreen(name) {
       Object.entries(screens).forEach(([screenName, element]) => {
@@ -501,14 +526,14 @@
     }
 
     function renderQuestion() {
-      const question = questions[questionIndex];
+      const question = shuffledQuestions[questionIndex];
       const questionNumber = questionIndex + 1;
       const stage = stages.find((item) => questionNumber <= item.end);
-      document.getElementById("question-count").textContent = `Câu ${questionNumber} / ${questions.length}`;
+      document.getElementById("question-count").textContent = `Câu ${questionNumber} / ${shuffledQuestions.length}`;
       document.getElementById("stage-label").textContent = stage.label;
       document.getElementById("question-number").textContent = `Câu hỏi số ${String(questionNumber).padStart(2, "0")}`;
       document.getElementById("question-title").textContent = question.question;
-      document.getElementById("progress-fill").style.width = `${(questionNumber / questions.length) * 100}%`;
+      document.getElementById("progress-fill").style.width = `${(questionNumber / shuffledQuestions.length) * 100}%`;
       document.querySelector(".progress-track").setAttribute("aria-valuenow", questionNumber);
       feedbackElement.textContent = "";
       feedbackElement.className = "feedback";
@@ -530,7 +555,7 @@
     function selectAnswer(selectedIndex) {
       if (answered) return;
       answered = true;
-      const correctIndex = questions[questionIndex].correct;
+      const correctIndex = shuffledQuestions[questionIndex].correct;
       const buttons = answersElement.querySelectorAll(".answer");
       buttons.forEach((button, index) => {
         button.disabled = true;
@@ -542,10 +567,10 @@
         feedbackElement.textContent = "Chính xác! Bạn giỏi quá 🎉";
         feedbackElement.classList.add("success");
       } else {
-        feedbackElement.textContent = `Chưa đúng rồi! Đáp án là ${letters[correctIndex]}. ${questions[questionIndex].answers[correctIndex]}.`;
+        feedbackElement.textContent = `Chưa đúng rồi! Đáp án là ${letters[correctIndex]}. ${shuffledQuestions[questionIndex].answers[correctIndex]}.`;
         feedbackElement.classList.add("error");
       }
-      nextButton.innerHTML = questionIndex === questions.length - 1
+      nextButton.innerHTML = questionIndex === shuffledQuestions.length - 1
         ? "Xem kết quả <span aria-hidden=\"true\">→</span>"
         : "Tiếp theo <span aria-hidden=\"true\">→</span>";
       nextButton.hidden = false;
@@ -554,7 +579,7 @@
 
     function showResult() {
       document.getElementById("score").textContent = score;
-      document.getElementById("result-detail").textContent = `Bạn trả lời đúng ${score} trên ${questions.length} câu hỏi.`;
+      document.getElementById("result-detail").textContent = `Bạn trả lời đúng ${score} trên ${shuffledQuestions.length} câu hỏi.`;
       let title = "Tuyệt vời!";
       let message = "Trận đấu vui quá! Cùng thử sức thêm lần nữa nhé.";
       let icon = "🏆";
@@ -566,7 +591,7 @@
         title = "Làm tốt lắm!";
         message = "Bạn chơi tốt lắm! Thử thêm một trận để ghi được nhiều điểm hơn nhé.";
         icon = "🌟";
-      } else if (score === questions.length) {
+      } else if (score === shuffledQuestions.length) {
         title = "Xuất sắc!";
         message = "Bạn là ngôi sao sân cỏ! Trả lời đúng cả 10 câu, thật đáng nể!";
         icon = "🏆";
@@ -578,6 +603,7 @@
     }
 
     function startGame() {
+      shuffledQuestions = createShuffledQuestions();
       questionIndex = 0;
       score = 0;
       renderQuestion();
@@ -587,7 +613,7 @@
     document.getElementById("start-button").addEventListener("click", startGame);
     document.getElementById("replay-button").addEventListener("click", startGame);
     nextButton.addEventListener("click", () => {
-      if (questionIndex === questions.length - 1) {
+      if (questionIndex === shuffledQuestions.length - 1) {
         showResult();
       } else {
         questionIndex += 1;
